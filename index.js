@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json()); // parse JSON body
 
-const TARGET_URL = process.env.TARGET_URL || "https://eo3nbtii3r4ehzm.m.pipedream.net";
+const TARGET_URL = "https://eo3nbtii3r4ehzm.m.pipedream.net";
 
 app.post("/", async (req, res) => {
   try {
