@@ -1,26 +1,44 @@
-import express from "express";
-import fetch from "node-fetch";
-
+const express = require('express');
+const fetch = require('node-fetch'); // or native fetch
 const app = express();
-app.use(express.json()); // parse JSON body
+app.use(express.json());
 
-const TARGET_URL = "https://eo3nbtii3r4ehzm.m.pipedream.net";
+// Fetch from environment variables
+const WP_USERNAME = process.env.WP_USERNAME;
+const WP_PASSWORD = process.env.WP_PASSWORD;
+const WP_URL = process.env.WP_URL; // e.g. https://gorgeous-straw.localsite.io/wp-json/mpesa/v1/callback
 
-app.post("/", async (req, res) => {
+if (!WP_USERNAME || !WP_PASSWORD || !WP_URL) {
+  console.error('Missing environment variables! Please set WP_USERNAME, WP_PASSWORD, WP_URL');
+  process.exit(1);
+}
+
+app.post('/', async (req, res) => {
   try {
-    // Forward the incoming request body to your Pipedream URL
-    await fetch(TARGET_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
+    console.log('Received callback from Daraja:', JSON.stringify(req.body, null, 2));
+
+    // Basic Auth header
+    const authHeader = 'Basic ' + Buffer.from(`${WP_USERNAME}:${WP_PASSWORD}`).toString('base64');
+
+    // Forward the callback to your live WP site
+    const wpRes = await fetch(WP_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
     });
 
-    res.status(200).send("Webhook forwarded!");
+    const wpBody = await wpRes.text();
+    console.log('Forwarded to WP, response:', wpBody);
+
+    res.status(200).send('OK');
   } catch (err) {
-    console.error("Forwarding error:", err);
-    res.status(500).send("Error forwarding webhook");
+    console.error('Error forwarding callback:', err);
+    res.status(500).send('Error forwarding callback');
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Webhook forwarder running on port ${PORT}`));
+app.listen(PORT, () => console.log(`MPesa relay running on port ${PORT}`));
