@@ -1,12 +1,13 @@
-const express = require('express');
-const fetch = require('node-fetch'); // or native fetch
+import fetch from "node-fetch";
+import express from "express";
+
 const app = express();
 app.use(express.json());
 
 // Fetch from environment variables
 const WP_USERNAME = process.env.WP_USERNAME;
 const WP_PASSWORD = process.env.WP_PASSWORD;
-const WP_URL = process.env.WP_URL; // e.g. https://gorgeous-straw.localsite.io/wp-json/mpesa/v1/callback
+const WP_URL = process.env.WP_URL;
 
 if (!WP_USERNAME || !WP_PASSWORD || !WP_URL) {
   console.error('Missing environment variables! Please set WP_USERNAME, WP_PASSWORD, WP_URL');
